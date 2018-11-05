@@ -1,0 +1,25 @@
+{% extends 'base.html' %} {% block content %}
+
+<article class="media content-section">
+    <div class="media-body">
+        <div class="article-metadata">
+
+            
+            <div class="container text-center">
+                <h2>My Diary</h2>
+                {% for post in posts%}
+
+                <button type="button" class="btn btn-outline-secondary" data-toggle="collapse" data-target="#id{{post._id}}">{{post.title}} post: {{post.time.strftime("%x")}}</button>
+                <div id="id{{post._id}}" class="collapse">
+                    <p>{{post.content}}</p>
+                </div>
+
+
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+</article>
+{% endblock %}

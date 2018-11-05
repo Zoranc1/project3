@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_pymongo import PyMongo
-from forms import reg_form, logIn_form, Updateform
+from forms import reg_form, logIn_form, Updateform, diary_form
 from flask_login import login_required
 from bson.objectid import ObjectId
 from base64 import b64encode
@@ -30,12 +30,8 @@ def get_category_names():
 
 @app.route("/")
 def home():
-    categories = get_category_names()
-    all_tasks=[]
-    for cat in categories:
-        for doc in dbase.db[cat].find():
-            all_tasks.append(doc)
-    return render_template("home.html", categories=categories, tasks=all_tasks )
+    
+    return render_template("home.html")
 
 @app.route("/about")
 def about():
@@ -63,7 +59,7 @@ def register():
             session['username'] = user['username']
             if form.validate_on_submit():
                 flash("Account has been successfully created with username: {}".format(user['username']), "success")
-            return redirect(url_for("your_diary"))
+            return redirect(url_for("add_diary"))
         return 'That username already exist'
     
     return render_template("register.html", title='Register', form = form)
@@ -82,7 +78,7 @@ def login():
                     user['_id']=str(user['_id'])
                     session["username"] = user['username']
                     flash("You have been logged in!! ", "success")
-                return redirect(url_for("your_diary"))
+                return redirect(url_for("my_diary"))
             else:
                 flash('Login Unsuccessful. Please chack email and password','danger')
                 return redirect(url_for("login"))
@@ -98,10 +94,29 @@ def login():
 def logout():
     del session["username"]
     return redirect(url_for("login"))
-    
+
 @app.route("/diary",methods=['GET','POST'])
-def your_diary(): 
-    return render_template("account.html")
+def diary():
+    posts = dbase.db.diary.find({'username':session['username']})
+    
+    return render_template("my_diary.html", posts=posts)
+    
+    
+@app.route("/add_diary",methods=['GET','POST'])
+def add_diary(): 
+    form = diary_form()
+    if request.method == 'POST':
+        diary = dbase.db.diary
+        if form.validate_on_submit():
+            d_post = {'username':session['username'],
+                        'title':request.form['title'],'content':request.form['content'],'time':datetime.datetime.now()}
+            diary.insert(d_post)
+            flash('You just save a new content to your diary!!!','success')
+            return redirect(url_for("diary"))
+            
+        else:
+            return "All fields are requered"
+    return render_template("add_diary.html",form= form)
     
     
 @app.route("/account",methods=['POST','GET'])

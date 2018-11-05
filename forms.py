@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Length,Email, EqualTo
 
 class reg_form(FlaskForm):
@@ -20,4 +20,10 @@ class Updateform(FlaskForm):
     username = StringField('Username',validators=[DataRequired(),Length(min=2, max=20)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     
-    submit = SubmitField('Update')    
+    submit = SubmitField('Update') 
+    
+class diary_form(FlaskForm):
+    
+    title = StringField('Title',validators=[DataRequired(),Length(min=2, max=100)])
+    content = TextAreaField('Content',validators=[DataRequired(),Length(min=2, max=500)])
+    submit = SubmitField('Why not')      
