@@ -42,6 +42,9 @@ def about():
     categories = get_category_names()
     return render_template("about.html", categories=categories, category='Task List')
 
+
+
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = reg_form()
@@ -54,10 +57,13 @@ def register():
             user = {'username':request.form['username'],
                         'email':request.form['email'], 'password' : hashpass,'time':datetime.datetime.now()}
             users.insert(user)
-            session['user'] = user
+            
+            
+            # Login the new user
+            session['username'] = user['username']
             if form.validate_on_submit():
-                flash("Account has been successfully created with username: {}".format(session['user']['username']), "success")
-            return redirect(url_for("home"))
+                flash("Account has been successfully created with username: {}".format(user['username']), "success")
+            return redirect(url_for("your_diary"))
         return 'That username already exist'
     
     return render_template("register.html", title='Register', form = form)
@@ -74,9 +80,9 @@ def login():
             if bcrypt.check_password_hash(user['password'], request.form['password']):
                 if form.validate_on_submit():
                     user['_id']=str(user['_id'])
-                    session["user"] = user
+                    session["username"] = user['username']
                     flash("You have been logged in!! ", "success")
-                return redirect(url_for("home"))
+                return redirect(url_for("your_diary"))
             else:
                 flash('Login Unsuccessful. Please chack email and password','danger')
                 return redirect(url_for("login"))
@@ -93,10 +99,15 @@ def logout():
     del session["username"]
     return redirect(url_for("login"))
     
+@app.route("/diary",methods=['GET','POST'])
+def your_diary(): 
+    return render_template("account.html")
+    
+    
 @app.route("/account",methods=['POST','GET'])
 def account():
     form = Updateform()
-    if 'username' not in session['user']:
+    if 'username' not in session:
         return redirect(url_for("login"))
         
     else:
@@ -106,8 +117,6 @@ def account():
             session['user']['username']=form.username.data
             session['user']['email']=form.email.data
             user=dbase.db['users'].find_one({'username':old_username})
-            
-            
             
         return render_template("account.html", title='Account',image=image, form=form)
 
